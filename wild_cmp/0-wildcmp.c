@@ -13,27 +13,18 @@ int wildcmp(char *s1, char *s2)
     if (*s2 == '\0')
         return (*s1 == '\0');
 
-    /* When s2 starts with '*', it can match any sequence (including empty) */
+    /* If current char of s2 is '*', try two recursive options:
+     * 1) treat '*' as matching empty: advance s2
+     * 2) if s1 not at end, consume one char from s1 and keep s2
+     * This eliminates any loops by using recursion only.
+     */
     if (*s2 == '*')
     {
-        /* Skip consecutive '*' to avoid redundant work */
-        while (*(s2 + 1) == '*')
-            s2++;
-
-        /* If '*' is the last char in s2, it matches the rest of s1 */
-        if (*(s2 + 1) == '\0')
+        if (wildcmp(s1, s2 + 1))
             return 1;
-
-        /* Try to match the remainder of s2 with s1 at current or later positions */
-        while (*s1)
-        {
-            if (wildcmp(s1, s2 + 1))
-                return 1;
-            s1++;
-        }
-
-        /* Also try matching empty sequence for '*' (s1 may be at '\0') */
-        return wildcmp(s1, s2 + 1);
+        if (*s1 && wildcmp(s1 + 1, s2))
+            return 1;
+        return 0;
     }
 
     /* Normal character: must match and advance both */
